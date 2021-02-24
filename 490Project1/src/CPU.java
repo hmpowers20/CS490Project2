@@ -9,6 +9,10 @@ public class CPU implements Runnable
         this.isPaused = isPaused;
     }
 
+    public CPUProcess getCurrentProcess() {
+        return currentProcess;
+    }
+
     public void run()
     {
         while(true) {

@@ -1,7 +1,5 @@
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.time.Duration;
-import java.util.Timer;
 
 public class CPUProcess {
     public String name;
@@ -24,8 +22,8 @@ public class CPUProcess {
 
     public void setDuration(double duration)
     {
-        support.firePropertyChange("duration", null, this);
         this.duration = duration;
+        support.firePropertyChange("duration", null, this);
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener)

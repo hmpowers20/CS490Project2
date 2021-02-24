@@ -40,7 +40,6 @@ public class ProcessManager implements PropertyChangeListener {
         if (processes.size() > 0)
         {
             CPUProcess removedProcess = processes.remove();
-            removedProcess.removePropertyChangeListener(this);
             support.firePropertyChange("processes", null, processes);
             return removedProcess;
         }
@@ -55,12 +54,11 @@ public class ProcessManager implements PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent event)
     {
         CPUProcess p = (CPUProcess)event.getNewValue();
-        for (CPUProcess process : processes)
+        for (CPU cpu : cpus)
         {
-            if (process.name == p.name)
+            if (cpu.getCurrentProcess().name == p.name)
                 support.firePropertyChange("cpu1Process", null, p);
 
         }
-        support.firePropertyChange("processes", null, processes);
     }
 }
