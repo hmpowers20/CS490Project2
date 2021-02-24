@@ -20,11 +20,11 @@ public class parseF implements Runnable{
         //processes can be used in tandem to either peek or creat FIFO
         // item implementation.
         //--------------------------------------------------------------------------
-        Window mywin = new Window();
+        //Window mywin = new Window();
 
 
         ArrayList<ProcessRead> processes = new ArrayList<ProcessRead>();
-        Queue<ArrayList<ProcessRead>> Process_Collect = null;
+        Queue<ArrayList<ProcessRead>> Process_Collect = new LinkedList<>();
         CPU_Pause wait = new CPU_Pause();
         while (input.hasNext()) {
             {
@@ -34,7 +34,6 @@ public class parseF implements Runnable{
                 P = Double.parseDouble(input.next().substring(1));
 
                 processes.add(new ProcessRead(A_T, id, S_T, P));
-                Process_Collect = new LinkedList<>();
                 Process_Collect.add(processes);
                 CPU_Pause.Thread_Run();
             }
