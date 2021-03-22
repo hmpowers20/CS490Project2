@@ -1,3 +1,10 @@
+/*********************************************************
+ CS 490 Semester Project - Phases 1 & 2
+ Contributors: Aaron Wells, Haley Powers, Taylor Buchanan
+ Due Date (Phase 2): 03/26/2021
+ CS 490-02 -- Professor Allen
+ *********************************************************/
+
 import javax.swing.*;
 import java.awt.*;
 

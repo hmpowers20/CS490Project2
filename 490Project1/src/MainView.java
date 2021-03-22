@@ -1,3 +1,9 @@
+/*********************************************************
+CS 490 Semester Project - Phases 1 & 2
+Contributors: Aaron Wells, Haley Powers, Taylor Buchanan
+Due Date (Phase 2): 03/26/2021
+CS 490-02 -- Professor Allen
+ *********************************************************/
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
@@ -12,6 +18,9 @@ import java.io.FileNotFoundException;
 import java.util.Queue;
 import java.util.Scanner;
 
+/***********************************
+This class creates the GUI display.
+ ***********************************/
 public class MainView extends JComponent implements PropertyChangeListener
 {
     DefaultTableModel model;
@@ -19,7 +28,9 @@ public class MainView extends JComponent implements PropertyChangeListener
     JTextField timeRemaining;
 
     final String[] colNames = {"Process Name", "Service Time"};
-
+    /******************************************************************************************************************
+    The MainView constructor contains all of the buttons, displays, and calls the necessary methods to update the GUI.
+     ******************************************************************************************************************/
     public MainView()
     {
         JPanel mainPanel = new JPanel();
@@ -84,6 +95,9 @@ public class MainView extends JComponent implements PropertyChangeListener
         parseFile();
     }
 
+    /****************************************************************************************************************
+    The parseFile method reads in the file and extracts the process information needed to populate the GUI displays.
+     ****************************************************************************************************************/
     public void parseFile()
     {
         Scanner input;
@@ -119,6 +133,10 @@ public class MainView extends JComponent implements PropertyChangeListener
         }
     }
 
+    /***********************************************************************
+    The propertyChange method contains all of the logic to update the GUI.
+     ***********************************************************************/
+    @Override
     public void propertyChange(PropertyChangeEvent event)
     {
         String propertyName = event.getPropertyName();
