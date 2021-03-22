@@ -10,12 +10,16 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /***********************************************************************
  Class that manages queued processes and CPUs
  ***********************************************************************/
 public class ProcessManager implements PropertyChangeListener {
     public static ProcessManager instance = new ProcessManager();
+
+    public Lock queueLock = new ReentrantLock();
 
     private Queue<CPUProcess> processes = new LinkedList<>();
     private List<CPU> cpus = new ArrayList<>();
@@ -29,6 +33,9 @@ public class ProcessManager implements PropertyChangeListener {
     {
         cpus.add(new CPU());
         cpus.get(0).start();
+
+        cpus.add(new CPU());
+        cpus.get(1).start();
     }
 
     /***********************************************************************
@@ -45,7 +52,10 @@ public class ProcessManager implements PropertyChangeListener {
      ***********************************************************************/
     public void setCpuPause(boolean isPaused)
     {
-        cpus.get(0).setPaused(isPaused);
+        for (CPU cpu : cpus)
+        {
+            cpu.setPaused(isPaused);
+        }
     }
 
     /***********************************************************************
@@ -54,7 +64,12 @@ public class ProcessManager implements PropertyChangeListener {
     public void addProcess(CPUProcess process)
     {
         process.addPropertyChangeListener(this);
-        processes.add(process);
+        queueLock.lock();
+        try {
+            processes.add(process);
+        } finally {
+            queueLock.unlock();
+        }
         support.firePropertyChange("processes", null, processes);
     }
 
@@ -64,13 +79,22 @@ public class ProcessManager implements PropertyChangeListener {
      ***********************************************************************/
     public CPUProcess popProcess()
     {
-        if (processes.size() > 0)
-        {
-            CPUProcess removedProcess = processes.remove();
-            support.firePropertyChange("processes", null, processes);
-            return removedProcess;
+        CPUProcess removedProcess = null;
+
+        queueLock.lock();
+        try {
+            if (processes.size() > 0)
+            {
+                removedProcess = processes.remove();
+            }
+        } finally {
+            queueLock.unlock();
         }
-        return null;
+
+        if (removedProcess != null)
+            support.firePropertyChange("processes", null, processes);
+
+        return removedProcess;
     }
 
     /***********************************************************************
@@ -88,11 +112,12 @@ public class ProcessManager implements PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent event)
     {
         CPUProcess p = (CPUProcess)event.getNewValue();
-        for (CPU cpu : cpus)
+        for (int i = 0; i < cpus.size(); i++)
         {
-            if (cpu.getCurrentProcess().name == p.name)
-                support.firePropertyChange("cpu1Process", null, p);
-
+            CPUProcess cpuProcess = cpus.get(i).getCurrentProcess();
+            if (cpuProcess != null && cpuProcess.name == p.name) {
+                support.firePropertyChange("cpu" + 1 + "Process", null, p);
+            }
         }
     }
 }

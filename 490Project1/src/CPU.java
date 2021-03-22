@@ -55,6 +55,14 @@ public class CPU implements Runnable
                             currentProcess = ProcessManager.instance.popProcess();
                         }
                     }
+                    else
+                    {
+                        try {
+                            Thread.sleep(50);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
             }
             try {

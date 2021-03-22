@@ -60,6 +60,7 @@ public class MainView extends JComponent implements PropertyChangeListener
         model = new DefaultTableModel(colNames, 0);
         JTable table = new JTable(model);
 
+        //Need to add a second CPU gui component
         JPanel adminPanel = new JPanel();
         adminPanel.setLayout(new GridLayout(2, 1));
 
