@@ -8,7 +8,6 @@
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -22,6 +21,7 @@ public class ProcessManager implements PropertyChangeListener {
     public Lock queueLock = new ReentrantLock();
 
     private Queue<CPUProcess> processes = new LinkedList<>();
+    private List<CPUProcess> finishedProcesses = new ArrayList<>();
     private List<CPU> cpus = new ArrayList<>();
 
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
@@ -52,10 +52,15 @@ public class ProcessManager implements PropertyChangeListener {
      ***********************************************************************/
     public void setCpuPause(boolean isPaused)
     {
+        ProcessScheduler.instance.isPaused = isPaused;
         for (CPU cpu : cpus)
         {
             cpu.setPaused(isPaused);
         }
+    }
+
+    public void addArrivingProcess(CPUProcess cpuProcess) {
+        ProcessScheduler.instance.addArrivingProcess(cpuProcess);
     }
 
     /***********************************************************************
@@ -71,6 +76,10 @@ public class ProcessManager implements PropertyChangeListener {
             queueLock.unlock();
         }
         support.firePropertyChange("processes", null, processes);
+    }
+
+    public void addFinishedProcess(CPUProcess process) {
+        finishedProcesses.add(process);
     }
 
     /***********************************************************************
@@ -116,7 +125,7 @@ public class ProcessManager implements PropertyChangeListener {
         {
             CPUProcess cpuProcess = cpus.get(i).getCurrentProcess();
             if (cpuProcess != null && cpuProcess.name == p.name) {
-                support.firePropertyChange("cpu" + 1 + "Process", null, p);
+                support.firePropertyChange("cpu" + (i + 1) + "Process", null, p);
             }
         }
     }

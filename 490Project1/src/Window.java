@@ -14,7 +14,7 @@ public class Window {
      * @return JFrame representing our window.
      */
     public static JFrame createWindow() {
-        JFrame window = new JFrame("Phase 1");   // create the window JFrame
+        JFrame window = new JFrame("Phase 2");   // create the window JFrame
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);  // ensure that the window closes completely when exited
 
         window.setResizable(false);     // Resizable is set to false so the user is prevented from changing the size of the JFrame.

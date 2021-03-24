@@ -5,12 +5,12 @@ Due Date (Phase 2): 03/26/2021
 CS 490-02 -- Professor Allen
  *********************************************************/
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -26,6 +26,10 @@ public class MainView extends JComponent implements PropertyChangeListener
     DefaultTableModel model;
     JTextField currentProcess;
     JTextField timeRemaining;
+    JTextField currentProcess2;
+    JTextField timeRemaining2;
+
+    JTextField timeUnitInput;
 
     final String[] colNames = {"Process Name", "Service Time"};
     /******************************************************************************************************************
@@ -54,33 +58,87 @@ public class MainView extends JComponent implements PropertyChangeListener
         currentProcess = new JTextField("Executing:");
         timeRemaining = new JTextField("Time Remaining:");
 
+        currentProcess2 = new JTextField("Executing:");
+        timeRemaining2 = new JTextField("Time Remaining:");
+
         JPanel cpuPanel = new JPanel();
-        cpuPanel.setLayout(new GridLayout(2, 1));
+        cpuPanel.setLayout(new BoxLayout(cpuPanel, BoxLayout.PAGE_AXIS));
 
-        model = new DefaultTableModel(colNames, 0);
-        JTable table = new JTable(model);
+        JPanel cpuPanel2 = new JPanel();
+        cpuPanel2.setLayout(new BoxLayout(cpuPanel2, BoxLayout.PAGE_AXIS));
 
-        //Need to add a second CPU gui component
         JPanel adminPanel = new JPanel();
         adminPanel.setLayout(new GridLayout(2, 1));
 
+        //CPU 1
+        JLabel cpu1Label = new JLabel("CPU #1");
+
+        cpuPanel.add(cpu1Label);
         cpuPanel.add(currentProcess);
         cpuPanel.add(timeRemaining);
-        adminPanel.add(new JScrollPane(table));
-        adminPanel.add(cpuPanel);
-        adminPanel.setPreferredSize(new Dimension(400, 200));
-        mainPanel.add(adminPanel, BorderLayout.CENTER);
 
+        adminPanel.add(cpuPanel);
+
+        //CPU 2
+        JLabel cpu2Label = new JLabel("CPU #2");
+
+        cpuPanel2.add(cpu2Label);
+        cpuPanel2.add(currentProcess2);
+        cpuPanel2.add(timeRemaining2);
+
+        adminPanel.add(cpuPanel2);
+
+        adminPanel.setPreferredSize(new Dimension(400, 200));
+        mainPanel.add(adminPanel, BorderLayout.EAST);
+
+        //Process Queue
+        model = new DefaultTableModel(colNames, 0);
+        JTable table = new JTable(model);
+
+        JPanel queuePanel = new JPanel();
+        queuePanel.setLayout(new FlowLayout());
+
+        queuePanel.add(new JScrollPane(table));
+        mainPanel.add(queuePanel, BorderLayout.CENTER);
+
+        //Time unit field
         JLabel timeUnit = new JLabel("1 time unit (ms) = ");
-        JTextArea time = new JTextArea();
+
+        timeUnitInput = new JTextField("100");
+        timeUnitInput.setPreferredSize(new Dimension(40, 20));
+        timeUnitInput.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                int timeUnit = 1;
+                try {
+                    timeUnit = Integer.parseInt(timeUnitInput.getText());
+                }
+                catch (NumberFormatException ex)
+                {
+                    timeUnit = 1;
+                }
+                if (timeUnit <= 0)
+                    timeUnit = 1;
+                ProcessScheduler.instance.timeUnit = timeUnit;
+            }
+        });
 
         JPanel timePanel = new JPanel();
-        timePanel.setLayout(new GridLayout(2,1));
+        timePanel.setLayout(new FlowLayout());
         timePanel.add(timeUnit);
-        timePanel.add(time);
+        timePanel.add(timeUnitInput);
         timePanel.setPreferredSize(new Dimension(200, 50));
         mainPanel.add(timePanel, BorderLayout.WEST);
 
+        //This is the stats panel GUI stuff
         JTextField systemReport = new JTextField("This will eventually show system report stats (finished processes, current throughput, etc.)");
 
         JPanel reportPanel = new JPanel();
@@ -121,15 +179,7 @@ public class MainView extends JComponent implements PropertyChangeListener
                 int length = Integer.parseInt(input.next().trim());
                 int priority = Integer.parseInt(input.next().trim());
 
-                new java.util.Timer().schedule(
-                        new java.util.TimerTask() {
-                            @Override
-                            public void run() {
-                                ProcessManager.instance.addProcess(new CPUProcess(name, length, priority));
-                            }
-                        },
-                        arrivalTime * 1000
-                );
+                ProcessManager.instance.addArrivingProcess(new CPUProcess(name, length, priority, arrivalTime));
             }
         }
     }
@@ -141,7 +191,7 @@ public class MainView extends JComponent implements PropertyChangeListener
     public void propertyChange(PropertyChangeEvent event)
     {
         String propertyName = event.getPropertyName();
-        if (propertyName == "processes") {
+        if (propertyName.equals("processes")) {
             Queue<CPUProcess> processes = (Queue<CPUProcess>) event.getNewValue();
             int rows = model.getRowCount();
             for (int i = 0; i < rows; i++) {
@@ -152,11 +202,16 @@ public class MainView extends JComponent implements PropertyChangeListener
             }
             model.fireTableDataChanged();
         }
-        else if (propertyName == "cpu1Process")
+        else if (propertyName.equals("cpu1Process"))
         {
             CPUProcess p = (CPUProcess)event.getNewValue();
             currentProcess.setText("Executing " + p.name);
             timeRemaining.setText("Time Remaining: " + p.getDuration());
+        }
+        else if(propertyName.equals("cpu2Process")){
+            CPUProcess p = (CPUProcess)event.getNewValue();//*************NEEDS WORK************************
+            currentProcess2.setText("Executing " + p.name);
+            timeRemaining2.setText("Time Remaining: " + p.getDuration());
         }
     }
 }

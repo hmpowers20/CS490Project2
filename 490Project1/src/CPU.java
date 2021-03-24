@@ -50,9 +50,13 @@ public class CPU implements Runnable
                             e.printStackTrace();
                         }
 
-                        currentProcess.setDuration(currentProcess.getDuration() - .05);
+                        currentProcess.setDuration(currentProcess.getDuration() - (50f / ProcessScheduler.instance.timeUnit));
                         if (currentProcess.getDuration() <= 0) {
+                            currentProcess.finishTime = ProcessScheduler.instance.currentTime;
+                            ProcessManager.instance.addFinishedProcess(currentProcess);
                             currentProcess = ProcessManager.instance.popProcess();
+                            if (currentProcess == null)
+                                break;
                         }
                     }
                     else

@@ -16,16 +16,20 @@ public class CPUProcess {
     private double duration;
     public int priority;
 
+    public double entryTime;
+    public double finishTime;
+
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
 
     /***********************************************************************
      Constructor that sets initial values
      ***********************************************************************/
-    public CPUProcess(String name, int duration, int priority)
+    public CPUProcess(String name, int duration, int priority, int entryTime)
     {
         this.name = name;
         this.duration = duration;
         this.priority = priority;
+        this.entryTime = entryTime;
     }
 
     /***********************************************************************
