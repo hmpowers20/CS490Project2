@@ -1,14 +1,19 @@
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.*;
 
 public class ProcessScheduler implements Runnable {
     public static ProcessScheduler instance = new ProcessScheduler();
     private Thread thread;
     public boolean isPaused = true;
+    private boolean hasBeenStarted = false;
 
     private Map<CPUProcess, Double> arrivingProcesses = new Hashtable<>();
 
     public double currentTime = 0;
     public int timeUnit = 100;
+
+    private PropertyChangeSupport support = new PropertyChangeSupport(this);
 
     public ProcessScheduler()
     {
@@ -17,6 +22,14 @@ public class ProcessScheduler implements Runnable {
 
     public void addArrivingProcess(CPUProcess cpuProcess) {
         arrivingProcesses.put(cpuProcess, (double) cpuProcess.entryTime);
+    }
+
+    /***********************************************************************
+     Adds a listener to the PropertyChangeListener
+     ***********************************************************************/
+    public void addPropertyChangeListener(PropertyChangeListener listener)
+    {
+        support.addPropertyChangeListener(listener);
     }
 
     @Override
@@ -34,11 +47,13 @@ public class ProcessScheduler implements Runnable {
                 for (CPUProcess process : processesToRemove) {
                     arrivingProcesses.remove(process);
                 }
+
+                currentTime += 50f / timeUnit;
+                support.firePropertyChange("time", null, new double[]{currentTime, ProcessManager.instance.getFinishedProcesses().size()});
             }
 
             try {
                 Thread.sleep(50);
-                currentTime += 50;
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

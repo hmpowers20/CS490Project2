@@ -1,14 +1,12 @@
 /*********************************************************
-CS 490 Semester Project - Phases 1 & 2
-Contributors: Aaron Wells, Haley Powers, Taylor Buchanan
-Due Date (Phase 2): 03/26/2021
-CS 490-02 -- Professor Allen
+ CS 490 Semester Project - Phases 1 & 2
+ Contributors: Aaron Wells, Haley Powers, Taylor Buchanan
+ Due Date (Phase 2): 03/26/2021
+ CS 490-02 -- Professor Allen
  *********************************************************/
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.beans.PropertyChangeEvent;
@@ -19,7 +17,7 @@ import java.util.Queue;
 import java.util.Scanner;
 
 /***********************************
-This class creates the GUI display.
+ This class creates the GUI display.
  ***********************************/
 public class MainView extends JComponent implements PropertyChangeListener
 {
@@ -28,12 +26,15 @@ public class MainView extends JComponent implements PropertyChangeListener
     JTextField timeRemaining;
     JTextField currentProcess2;
     JTextField timeRemaining2;
+    JLabel systemReport;
 
     JTextField timeUnitInput;
+    String[] statsHeader = {"Process Name","Arrival Time","Service Time","Finish Time","TAT","nTAT"};
+    DefaultTableModel model1;
 
     final String[] colNames = {"Process Name", "Service Time"};
     /******************************************************************************************************************
-    The MainView constructor contains all of the buttons, displays, and calls the necessary methods to update the GUI.
+     The MainView constructor contains all of the buttons, displays, and calls the necessary methods to update the GUI.
      ******************************************************************************************************************/
     public MainView()
     {
@@ -133,35 +134,46 @@ public class MainView extends JComponent implements PropertyChangeListener
 
         JPanel timePanel = new JPanel();
         timePanel.setLayout(new FlowLayout());
+
+        systemReport = new JLabel("Throughput:");
+
         timePanel.add(timeUnit);
         timePanel.add(timeUnitInput);
+        timePanel.add(systemReport);
         timePanel.setPreferredSize(new Dimension(200, 50));
         mainPanel.add(timePanel, BorderLayout.WEST);
 
         //This is the stats panel GUI stuff
-        JTextField systemReport = new JTextField("This will eventually show system report stats (finished processes, current throughput, etc.)");
+        String[] statsHeader = {"Process Name","Arrival Time","Service Time","Finish Time","TAT","nTAT"};
 
         JPanel reportPanel = new JPanel();
-        reportPanel.setLayout(new GridLayout(1, 1));
-        reportPanel.add(systemReport);
-        reportPanel.setPreferredSize(new Dimension(20,20));
+
+        //reportPanel.add(systemReport);
+
+        model1 = new DefaultTableModel(statsHeader, 0);
+        JTable statsTable = new JTable(model1);
+
+        reportPanel.add(new JScrollPane(statsTable));
+
+        reportPanel.setLayout(new FlowLayout());
         mainPanel.add(reportPanel, BorderLayout.PAGE_END);
 
         add(mainPanel);
         setLayout(new FlowLayout());
 
         ProcessManager.instance.addPropertyChangeListener(this);
+        ProcessScheduler.instance.addPropertyChangeListener(this);
         parseFile();
     }
 
     /****************************************************************************************************************
-    The parseFile method reads in the file and extracts the process information needed to populate the GUI displays.
+     The parseFile method reads in the file and extracts the process information needed to populate the GUI displays.
      ****************************************************************************************************************/
     public void parseFile()
     {
         Scanner input;
         try {
-            input = new Scanner(new File("src/test12.txt"));
+            input = new Scanner(new File("test12.txt"));
         }
         catch(FileNotFoundException e)
         {
@@ -185,7 +197,7 @@ public class MainView extends JComponent implements PropertyChangeListener
     }
 
     /***********************************************************************
-    The propertyChange method contains all of the logic to update the GUI.
+     The propertyChange method contains all of the logic to update the GUI.
      ***********************************************************************/
     @Override
     public void propertyChange(PropertyChangeEvent event)
@@ -198,20 +210,46 @@ public class MainView extends JComponent implements PropertyChangeListener
                 model.removeRow(0);
             }
             for (CPUProcess process : processes) {
-                model.addRow(new String[]{process.name, Double.toString(process.getDuration())});
+                model.addRow(new String[]{process.name, Double.toString(process.getRemainingDuration())});
             }
             model.fireTableDataChanged();
+        }
+        else if (propertyName.equals("finishedProcesses")) {
+            java.util.List<CPUProcess> processes = (java.util.List<CPUProcess>) event.getNewValue();
+            int rows = model1.getRowCount();
+            for (int i = 0; i < rows; i++) {
+                model1.removeRow(0);
+            }
+            for (CPUProcess process : processes) {
+                model1.addRow(new String[]{
+                        process.name,
+                        Double.toString(process.getEntryTime()),
+                        Double.toString(process.getDuration()),
+                        Double.toString(process.getFinishTime()),
+                        Double.toString(process.getTAT()),
+                        Double.toString(process.getnTAT())});
+            }
+            model1.fireTableDataChanged();
+        }
+        else if (propertyName.equals("time"))
+        {
+            double[] value = (double[]) event.getNewValue();
+            systemReport.setText("Throughput: " + (value[1] / value[0]));
         }
         else if (propertyName.equals("cpu1Process"))
         {
             CPUProcess p = (CPUProcess)event.getNewValue();
             currentProcess.setText("Executing " + p.name);
-            timeRemaining.setText("Time Remaining: " + p.getDuration());
+            timeRemaining.setText("Time Remaining: " + p.getRemainingDuration());
+            
         }
         else if(propertyName.equals("cpu2Process")){
-            CPUProcess p = (CPUProcess)event.getNewValue();//*************NEEDS WORK************************
+            CPUProcess p = (CPUProcess)event.getNewValue();
             currentProcess2.setText("Executing " + p.name);
-            timeRemaining2.setText("Time Remaining: " + p.getDuration());
+            timeRemaining2.setText("Time Remaining: " + p.getRemainingDuration());
+        }
+
         }
     }
-}
+
+

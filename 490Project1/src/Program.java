@@ -8,12 +8,12 @@
 import javax.swing.*;
 
 /****************************************************
-This class creates the window that contains the GUI.
+ This class creates the window that contains the GUI.
  ****************************************************/
 public class Program {
 
     /*********************************************************
-    This method contains the main() and constructs the window.
+     This method contains the main() and constructs the window.
      *********************************************************/
     public static void main(String[] args)
     {

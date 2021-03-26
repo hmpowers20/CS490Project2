@@ -42,7 +42,7 @@ public class CPU implements Runnable
             }
 
             if (currentProcess != null) {
-                while (currentProcess.getDuration() > 0) {
+                while (currentProcess.getRemainingDuration() > 0) {
                     if (!isPaused) {
                         try {
                             Thread.sleep(50);
@@ -50,8 +50,8 @@ public class CPU implements Runnable
                             e.printStackTrace();
                         }
 
-                        currentProcess.setDuration(currentProcess.getDuration() - (50f / ProcessScheduler.instance.timeUnit));
-                        if (currentProcess.getDuration() <= 0) {
+                        currentProcess.setRemainingDuration(currentProcess.getRemainingDuration() - (50f / ProcessScheduler.instance.timeUnit));
+                        if (currentProcess.getRemainingDuration() <= 0) {
                             currentProcess.finishTime = ProcessScheduler.instance.currentTime;
                             ProcessManager.instance.addFinishedProcess(currentProcess);
                             currentProcess = ProcessManager.instance.popProcess();

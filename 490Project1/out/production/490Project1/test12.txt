@@ -1,6 +1,0 @@
-0, process a, 10, 15
-5, process b, 14, 16
-6, process c, 4, 1
-4, process d, 15, 19
-3, process e, 6, 11
-7, process f, 20, 3

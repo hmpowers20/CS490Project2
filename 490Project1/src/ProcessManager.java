@@ -72,14 +72,21 @@ public class ProcessManager implements PropertyChangeListener {
         queueLock.lock();
         try {
             processes.add(process);
+            support.firePropertyChange("processes", null, processes);
         } finally {
             queueLock.unlock();
         }
-        support.firePropertyChange("processes", null, processes);
     }
 
-    public void addFinishedProcess(CPUProcess process) {
+    public void addFinishedProcess(CPUProcess process)
+    {
         finishedProcesses.add(process);
+        support.firePropertyChange("finishedProcesses", null, finishedProcesses);
+    }
+
+    public List<CPUProcess> getFinishedProcesses()
+    {
+        return finishedProcesses;
     }
 
     /***********************************************************************

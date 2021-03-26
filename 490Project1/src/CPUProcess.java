@@ -7,6 +7,7 @@
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.text.DecimalFormat;
 
 /***********************************************************************
  Class that represents a process
@@ -14,13 +15,14 @@ import java.beans.PropertyChangeSupport;
 public class CPUProcess {
     public String name;
     private double duration;
+    private double remainingDuration;
     public int priority;
 
     public double entryTime;
     public double finishTime;
 
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
-
+    private static DecimalFormat df = new DecimalFormat("0.00");
     /***********************************************************************
      Constructor that sets initial values
      ***********************************************************************/
@@ -28,6 +30,7 @@ public class CPUProcess {
     {
         this.name = name;
         this.duration = duration;
+        this.remainingDuration = duration;
         this.priority = priority;
         this.entryTime = entryTime;
     }
@@ -42,11 +45,24 @@ public class CPUProcess {
     }
 
     /***********************************************************************
+     Getter for remaining duration
+     @return The remaining duration
+     ***********************************************************************/
+    public double getRemainingDuration()
+    {
+        return remainingDuration;
+    }
+
+    public double getEntryTime() {return entryTime;}
+
+    public double getFinishTime() {return finishTime;}
+
+    /***********************************************************************
      Setter for duration
      ***********************************************************************/
-    public void setDuration(double duration)
+    public void setRemainingDuration(double remainingDuration)
     {
-        this.duration = duration;
+        this.remainingDuration = remainingDuration;
         support.firePropertyChange("duration", null, this);
     }
 
@@ -64,5 +80,13 @@ public class CPUProcess {
     public void removePropertyChangeListener(PropertyChangeListener listener)
     {
         support.removePropertyChangeListener(listener);
+    }
+
+    public double getTAT() {
+        return finishTime - entryTime;
+    }
+
+    public double getnTAT() {
+        return getTAT() / duration;
     }
 }
