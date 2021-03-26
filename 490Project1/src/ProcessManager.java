@@ -59,6 +59,9 @@ public class ProcessManager implements PropertyChangeListener {
         }
     }
 
+    /***********************************************************************
+     Adds a process to the list of arriving processes
+     ***********************************************************************/
     public void addArrivingProcess(CPUProcess cpuProcess) {
         ProcessScheduler.instance.addArrivingProcess(cpuProcess);
     }
@@ -78,12 +81,19 @@ public class ProcessManager implements PropertyChangeListener {
         }
     }
 
+    /***********************************************************************
+     Adds a finished process to the list of finished processes
+     ***********************************************************************/
     public void addFinishedProcess(CPUProcess process)
     {
         finishedProcesses.add(process);
         support.firePropertyChange("finishedProcesses", null, finishedProcesses);
     }
 
+    /***********************************************************************
+     The getter for finished processes.
+     @return the finished processes
+     ***********************************************************************/
     public List<CPUProcess> getFinishedProcesses()
     {
         return finishedProcesses;

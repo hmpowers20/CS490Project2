@@ -53,8 +53,16 @@ public class CPUProcess {
         return remainingDuration;
     }
 
+    /***********************************************************************
+     Getter for entry time
+     @return The time the process enters
+     ***********************************************************************/
     public double getEntryTime() {return entryTime;}
 
+    /***********************************************************************
+     Getter for the finished time
+     @return The time the process is finished
+     ***********************************************************************/
     public double getFinishTime() {return finishTime;}
 
     /***********************************************************************
@@ -82,10 +90,18 @@ public class CPUProcess {
         support.removePropertyChangeListener(listener);
     }
 
+    /***********************************************************************
+     Getter for the TAT value for processes
+     @return The TAT value
+     ***********************************************************************/
     public double getTAT() {
         return finishTime - entryTime;
     }
 
+    /***********************************************************************
+     Getter for the nTAT value for processes
+     @return The nTAT value
+     ***********************************************************************/
     public double getnTAT() {
         return getTAT() / duration;
     }

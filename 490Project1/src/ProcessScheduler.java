@@ -1,3 +1,10 @@
+/*********************************************************
+ CS 490 Semester Project - Phases 1 & 2
+ Contributors: Aaron Wells, Haley Powers, Taylor Buchanan
+ Due Date (Phase 2): 03/26/2021
+ CS 490-02 -- Professor Allen
+ *********************************************************/
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.*;
@@ -15,11 +22,17 @@ public class ProcessScheduler implements Runnable {
 
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
 
+    /***************************
+     Runs the start method.
+     ***************************/
     public ProcessScheduler()
     {
         start();
     }
 
+    /***********************************************************************
+     Adds a process to the list of arriving processes.
+     ***********************************************************************/
     public void addArrivingProcess(CPUProcess cpuProcess) {
         arrivingProcesses.put(cpuProcess, (double) cpuProcess.entryTime);
     }
@@ -32,6 +45,9 @@ public class ProcessScheduler implements Runnable {
         support.addPropertyChangeListener(listener);
     }
 
+    /***********************************************************************************************
+     Implementation of Runnable.run. Updates current time and determines if a process should arrive.
+     ***********************************************************************************************/
     @Override
     public void run() {
         while(true) {
