@@ -1,7 +1,7 @@
 /*********************************************************
- CS 490 Semester Project - Phases 1 & 2
+ CS 490 Semester Project - Phase 3
  Contributors: Aaron Wells, Haley Powers, Taylor Buchanan
- Due Date (Phase 2): 03/26/2021
+ Due Date (Phase 3): 04/19/2021
  CS 490-02 -- Professor Allen
  *********************************************************/
 

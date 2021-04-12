@@ -1,7 +1,7 @@
 /*********************************************************
- CS 490 Semester Project - Phases 1 & 2
+ CS 490 Semester Project - Phase 3
  Contributors: Aaron Wells, Haley Powers, Taylor Buchanan
- Due Date (Phase 2): 03/26/2021
+ Due Date (Phase 3): 04/19/2021
  CS 490-02 -- Professor Allen
  *********************************************************/
 
@@ -22,7 +22,6 @@ public class CPUProcess {
     public double finishTime;
 
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
-    private static DecimalFormat df = new DecimalFormat("0.00");
     /***********************************************************************
      Constructor that sets initial values
      ***********************************************************************/
@@ -33,6 +32,16 @@ public class CPUProcess {
         this.remainingDuration = duration;
         this.priority = priority;
         this.entryTime = entryTime;
+    }
+
+    public CPUProcess(CPUProcess process)
+    {
+        this.name = process.name;
+        this.duration = process.duration;
+        this.remainingDuration = process.remainingDuration;
+        this.priority = process.priority;
+        this.entryTime = process.entryTime;
+        this.finishTime = process.finishTime;
     }
 
     /***********************************************************************

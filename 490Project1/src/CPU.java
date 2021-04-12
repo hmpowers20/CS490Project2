@@ -1,7 +1,7 @@
 /*********************************************************
- CS 490 Semester Project - Phases 1 & 2
+ CS 490 Semester Project - Phase 3
  Contributors: Aaron Wells, Haley Powers, Taylor Buchanan
- Due Date (Phase 2): 03/26/2021
+ Due Date (Phase 3): 04/19/2021
  CS 490-02 -- Professor Allen
  *********************************************************/
 
@@ -13,6 +13,15 @@ public class CPU implements Runnable
     private Thread thread;
     private CPUProcess currentProcess;
     private boolean isPaused = true;
+    public ProcessManager pm;
+
+    /***********************************************************************
+     Setter for isPaused
+     ***********************************************************************/
+    public CPU(ProcessManager pm)
+    {
+        this.pm = pm;
+    }
 
     /***********************************************************************
      Setter for isPaused
@@ -38,7 +47,7 @@ public class CPU implements Runnable
     {
         while(true) {
             if (!isPaused) {
-                currentProcess = ProcessManager.instance.popProcess();
+                currentProcess = pm.popProcess();
             }
 
             if (currentProcess != null) {
@@ -50,11 +59,19 @@ public class CPU implements Runnable
                             e.printStackTrace();
                         }
 
-                        currentProcess.setRemainingDuration(currentProcess.getRemainingDuration() - (50f / ProcessScheduler.instance.timeUnit));
+                        currentProcess.setRemainingDuration(currentProcess.getRemainingDuration() - (50f / ProcessScheduler.timeUnit));
                         if (currentProcess.getRemainingDuration() <= 0) {
                             currentProcess.finishTime = ProcessScheduler.instance.currentTime;
-                            ProcessManager.instance.addFinishedProcess(currentProcess);
-                            currentProcess = ProcessManager.instance.popProcess();
+                            pm.addFinishedProcess(currentProcess);
+                            currentProcess = pm.popProcess();
+                            if (currentProcess == null)
+                                break;
+                        }
+
+                        if (pm.reevaluateProcess())
+                        {
+                            pm.addProcess(currentProcess);
+                            currentProcess = pm.popProcess();
                             if (currentProcess == null)
                                 break;
                         }

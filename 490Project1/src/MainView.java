@@ -1,9 +1,10 @@
 /*********************************************************
- CS 490 Semester Project - Phases 1 & 2
+ CS 490 Semester Project - Phase 3
  Contributors: Aaron Wells, Haley Powers, Taylor Buchanan
- Due Date (Phase 2): 03/26/2021
+ Due Date (Phase 3): 04/19/2021
  CS 490-02 -- Professor Allen
  *********************************************************/
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -13,6 +14,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.text.DecimalFormat;
 import java.util.Queue;
 import java.util.Scanner;
 
@@ -21,18 +23,24 @@ import java.util.Scanner;
  ***********************************/
 public class MainView extends JComponent implements PropertyChangeListener
 {
-    DefaultTableModel model;
+    DefaultTableModel processQueue1;
+    DefaultTableModel processQueue2;
     JTextField currentProcess;
     JTextField timeRemaining;
     JTextField currentProcess2;
     JTextField timeRemaining2;
-    JLabel systemReport;
+    JLabel systemReport1;
+    JLabel systemReport2;
 
     JTextField timeUnitInput;
+    JTextField timeQuantumInput;
     String[] statsHeader = {"Process Name","Arrival Time","Service Time","Finish Time","TAT","nTAT"};
-    DefaultTableModel model1;
+    DefaultTableModel reportTable1;
+    DefaultTableModel reportTable2;
 
     final String[] colNames = {"Process Name", "Service Time"};
+
+    private static DecimalFormat df = new DecimalFormat("0.00");
     /******************************************************************************************************************
      The MainView constructor contains all of the buttons, displays, and calls the necessary methods to update the GUI.
      ******************************************************************************************************************/
@@ -44,8 +52,8 @@ public class MainView extends JComponent implements PropertyChangeListener
         JButton startButton = new JButton("Start System");
         JButton pauseButton = new JButton("Pause System");
         JButton endProgram = new JButton ("Exit Program");
-        startButton.addActionListener(actionEvent -> ProcessManager.instance.setCpuPause(false));
-        pauseButton.addActionListener(actionEvent -> ProcessManager.instance.setCpuPause(true));
+        startButton.addActionListener(actionEvent -> ProcessScheduler.instance.setCpuPause(false));
+        pauseButton.addActionListener(actionEvent -> ProcessScheduler.instance.setCpuPause(true));
         endProgram.addActionListener(actionEvent -> System.exit(1));
 
         JPanel buttonPanel = new JPanel();
@@ -89,17 +97,22 @@ public class MainView extends JComponent implements PropertyChangeListener
 
         adminPanel.add(cpuPanel2);
 
-        adminPanel.setPreferredSize(new Dimension(400, 200));
+        adminPanel.setPreferredSize(new Dimension(300, 200));
         mainPanel.add(adminPanel, BorderLayout.EAST);
 
         //Process Queue
-        model = new DefaultTableModel(colNames, 0);
-        JTable table = new JTable(model);
-
         JPanel queuePanel = new JPanel();
         queuePanel.setLayout(new FlowLayout());
 
-        queuePanel.add(new JScrollPane(table));
+        processQueue1 = new DefaultTableModel(colNames, 0);
+        JScrollPane table1 = new JScrollPane(new JTable(processQueue1));
+        table1.setPreferredSize(new Dimension(300, 300));
+        queuePanel.add(table1);
+        processQueue2 = new DefaultTableModel(colNames, 0);
+        JScrollPane table2 = new JScrollPane(new JTable(processQueue2));
+        table2.setPreferredSize(new Dimension(300, 300));
+        queuePanel.add(table2);
+
         mainPanel.add(queuePanel, BorderLayout.CENTER);
 
         //Time unit field
@@ -118,7 +131,7 @@ public class MainView extends JComponent implements PropertyChangeListener
 
             @Override
             public void keyReleased(KeyEvent e) {
-                int timeUnit = 1;
+                int timeUnit;
                 try {
                     timeUnit = Integer.parseInt(timeUnitInput.getText());
                 }
@@ -128,32 +141,80 @@ public class MainView extends JComponent implements PropertyChangeListener
                 }
                 if (timeUnit <= 0)
                     timeUnit = 1;
-                ProcessScheduler.instance.timeUnit = timeUnit;
+                ProcessScheduler.timeUnit = timeUnit;
             }
         });
 
+        JLabel timeQuantum = new JLabel("1 time quantum (time units) = ");
+
+        timeQuantumInput = new JTextField("10");
+        timeQuantumInput.setPreferredSize(new Dimension(40, 20));
+        timeQuantumInput.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                int timeQuantum;
+                try {
+                    timeQuantum = Integer.parseInt(timeQuantumInput.getText());
+                }
+                catch (NumberFormatException ex)
+                {
+                    timeQuantum = 1000;
+                }
+                if (timeQuantum <= 0)
+                    timeQuantum = 1000;
+                RRProcessManager.timeQuantum = timeQuantum;
+            }
+        });
+
+        systemReport1 = new JLabel("CPU 1 nTAT: 0.00");
+        systemReport1.setPreferredSize(new Dimension(150, 20));
+        systemReport2 = new JLabel("CPU 2 nTAT: 0.00");
+        systemReport2.setPreferredSize(new Dimension(150, 20));
+
         JPanel timePanel = new JPanel();
         timePanel.setLayout(new FlowLayout());
-
-        systemReport = new JLabel("Throughput:");
-
         timePanel.add(timeUnit);
         timePanel.add(timeUnitInput);
-        timePanel.add(systemReport);
-        timePanel.setPreferredSize(new Dimension(200, 50));
+        timePanel.add(timeQuantum);
+        timePanel.add(timeQuantumInput);
+        timePanel.add(systemReport1);
+        timePanel.add(systemReport2);
+        timePanel.setPreferredSize(new Dimension(250, 50));
         mainPanel.add(timePanel, BorderLayout.WEST);
 
         //This is the stats panel GUI stuff
-        String[] statsHeader = {"Process Name","Arrival Time","Service Time","Finish Time","TAT","nTAT"};
-
         JPanel reportPanel = new JPanel();
+        JPanel statsPanel1 = new JPanel();
+        JPanel statsPanel2 = new JPanel();
+        statsPanel1.setLayout(new BoxLayout(statsPanel1, BoxLayout.PAGE_AXIS));
+        statsPanel2.setLayout(new BoxLayout(statsPanel2, BoxLayout.PAGE_AXIS));
 
-        //reportPanel.add(systemReport);
+        JLabel statsHeader1 = new JLabel("Report Table for CPU #1");
+        JLabel statsHeader2 = new JLabel("Report Table for CPU #2");
 
-        model1 = new DefaultTableModel(statsHeader, 0);
-        JTable statsTable = new JTable(model1);
+        reportTable1 = new DefaultTableModel(statsHeader, 0);
+        JScrollPane statsTable1 = new JScrollPane(new JTable(reportTable1));
+        statsTable1.setPreferredSize(new Dimension(300, 300));
 
-        reportPanel.add(new JScrollPane(statsTable));
+        reportTable2 = new DefaultTableModel(statsHeader, 0);
+        JScrollPane statsTable2 = new JScrollPane(new JTable(reportTable2));
+        statsTable2.setPreferredSize(new Dimension(300, 300));
+
+        statsPanel1.add(statsHeader1);
+        statsPanel1.add(statsTable1);
+        statsPanel2.add(statsHeader2);
+        statsPanel2.add(statsTable2);
+
+        reportPanel.add(statsPanel1);
+        reportPanel.add(statsPanel2);
 
         reportPanel.setLayout(new FlowLayout());
         mainPanel.add(reportPanel, BorderLayout.PAGE_END);
@@ -161,7 +222,6 @@ public class MainView extends JComponent implements PropertyChangeListener
         add(mainPanel);
         setLayout(new FlowLayout());
 
-        ProcessManager.instance.addPropertyChangeListener(this);
         ProcessScheduler.instance.addPropertyChangeListener(this);
         parseFile();
     }
@@ -191,7 +251,7 @@ public class MainView extends JComponent implements PropertyChangeListener
                 int length = Integer.parseInt(input.next().trim());
                 int priority = Integer.parseInt(input.next().trim());
 
-                ProcessManager.instance.addArrivingProcess(new CPUProcess(name, length, priority, arrivalTime));
+                ProcessScheduler.instance.addArrivingProcess(new CPUProcess(name, length, priority, arrivalTime));
             }
         }
     }
@@ -203,38 +263,78 @@ public class MainView extends JComponent implements PropertyChangeListener
     public void propertyChange(PropertyChangeEvent event)
     {
         String propertyName = event.getPropertyName();
-        if (propertyName.equals("processes")) {
-            Queue<CPUProcess> processes = (Queue<CPUProcess>) event.getNewValue();
-            int rows = model.getRowCount();
-            for (int i = 0; i < rows; i++) {
-                model.removeRow(0);
+        if (propertyName.startsWith("processes")) {
+            Queue<CPUProcess> processes = (Queue<CPUProcess>)event.getNewValue();
+            if (Integer.parseInt(propertyName.substring(9, 10)) == 0)
+            {
+                int rows = processQueue1.getRowCount();
+                for (int i = 0; i < rows; i++) {
+                    processQueue1.removeRow(0);
+                }
+                for (CPUProcess process : processes) {
+                    processQueue1.addRow(new String[]{process.name, Double.toString(process.getRemainingDuration())});
+                }
+                processQueue1.fireTableDataChanged();
             }
-            for (CPUProcess process : processes) {
-                model.addRow(new String[]{process.name, Double.toString(process.getRemainingDuration())});
+            else
+            {
+                int rows = processQueue2.getRowCount();
+                for (int i = 0; i < rows; i++) {
+                    processQueue2.removeRow(0);
+                }
+                for (CPUProcess process : processes) {
+                    processQueue2.addRow(new String[]{process.name, Double.toString(process.getRemainingDuration())});
+                }
+                processQueue2.fireTableDataChanged();
             }
-            model.fireTableDataChanged();
         }
-        else if (propertyName.equals("finishedProcesses")) {
+        else if (propertyName.startsWith("finishedProcesses")) {
             java.util.List<CPUProcess> processes = (java.util.List<CPUProcess>) event.getNewValue();
-            int rows = model1.getRowCount();
-            for (int i = 0; i < rows; i++) {
-                model1.removeRow(0);
+            if (Integer.parseInt(propertyName.substring(17, 18)) == 0) {
+                int rows = reportTable1.getRowCount();
+                for (int i = 0; i < rows; i++) {
+                    reportTable1.removeRow(0);
+                }
+                for (CPUProcess process : processes) {
+                    reportTable1.addRow(new String[]{
+                            process.name,
+                            Double.toString(process.getEntryTime()),
+                            Double.toString(process.getDuration()),
+                            Double.toString(process.getFinishTime()),
+                            Double.toString(process.getTAT()),
+                            Double.toString(process.getnTAT())});
+                }
+                reportTable1.fireTableDataChanged();
             }
-            for (CPUProcess process : processes) {
-                model1.addRow(new String[]{
-                        process.name,
-                        Double.toString(process.getEntryTime()),
-                        Double.toString(process.getDuration()),
-                        Double.toString(process.getFinishTime()),
-                        Double.toString(process.getTAT()),
-                        Double.toString(process.getnTAT())});
+            else
+            {
+                int rows = reportTable2.getRowCount();
+                for (int i = 0; i < rows; i++) {
+                    reportTable2.removeRow(0);
+                }
+                for (CPUProcess process : processes) {
+                    reportTable2.addRow(new String[]{
+                            process.name,
+                            Double.toString(process.getEntryTime()),
+                            Double.toString(process.getDuration()),
+                            Double.toString(process.getFinishTime()),
+                            Double.toString(process.getTAT()),
+                            Double.toString(process.getnTAT())});
+                }
+                reportTable2.fireTableDataChanged();
             }
-            model1.fireTableDataChanged();
         }
-        else if (propertyName.equals("time"))
+        else if (propertyName.startsWith("averageNTAT"))
         {
-            double[] value = (double[]) event.getNewValue();
-            systemReport.setText("Throughput: " + (value[1] / value[0]));
+            double value = (double)event.getNewValue();
+            if (Integer.parseInt(propertyName.substring(11, 12)) == 0)
+            {
+                systemReport1.setText("CPU 1 nTAT: " + df.format(value));
+            }
+            else
+            {
+                systemReport2.setText("CPU 2 nTAT: " + df.format(value));
+            }
         }
         else if (propertyName.equals("cpu1Process"))
         {
@@ -248,8 +348,5 @@ public class MainView extends JComponent implements PropertyChangeListener
             currentProcess2.setText("Executing " + p.name);
             timeRemaining2.setText("Time Remaining: " + p.getRemainingDuration());
         }
-
-        }
     }
-
-
+}
