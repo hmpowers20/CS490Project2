@@ -104,15 +104,28 @@ public class MainView extends JComponent implements PropertyChangeListener
         JPanel queuePanel = new JPanel();
         queuePanel.setLayout(new FlowLayout());
 
+        JPanel processTable1 = new JPanel();
+        JPanel processTable2 = new JPanel();
+        processTable1.setLayout(new BoxLayout(processTable1, BoxLayout.PAGE_AXIS));
+        processTable2.setLayout(new BoxLayout(processTable2, BoxLayout.PAGE_AXIS));
+
+        JLabel processHeader1 = new JLabel("Process Queue #1:");
+        JLabel processHeader2 = new JLabel("Process Queue #2:");
+
         processQueue1 = new DefaultTableModel(colNames, 0);
         JScrollPane table1 = new JScrollPane(new JTable(processQueue1));
         table1.setPreferredSize(new Dimension(300, 300));
-        queuePanel.add(table1);
+
         processQueue2 = new DefaultTableModel(colNames, 0);
         JScrollPane table2 = new JScrollPane(new JTable(processQueue2));
         table2.setPreferredSize(new Dimension(300, 300));
-        queuePanel.add(table2);
 
+        processTable1.add(processHeader1);
+        processTable1.add(table1);
+        processTable2.add(processHeader2);
+        processTable2.add(table2);
+        queuePanel.add(processTable1);
+        queuePanel.add(processTable2);
         mainPanel.add(queuePanel, BorderLayout.CENTER);
 
         //Time unit field
